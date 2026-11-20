@@ -27,14 +27,15 @@ def sun(size, horizon, stroke=4):
 
 def cover(p, photo_uri):
     c = p["cover"]
-    bg = (f'<img src="{photo_uri}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;'
+    ph = p.get("photo_height", H)  # Foto kann auf den oberen Teil begrenzt werden, damit das Motiv über dem Text bleibt
+    bg = (f'<img src="{photo_uri}" style="position:absolute;top:0;left:0;width:100%;height:{ph}px;object-fit:cover;'
           f'object-position:{e(p.get("photo_position", "center"))}">' if photo_uri else
           f'<div style="position:absolute;inset:0;background:{NAVY}"></div>')
     credit = p.get("photo_credit", "")
     return f'''
 <div style="width:{W}px;height:{H}px;position:relative;overflow:hidden;background:{NAVY};font-family:Manrope,sans-serif">
 {bg}
-<div style="position:absolute;left:0;right:0;bottom:0;height:860px;background:linear-gradient(180deg,rgba(14,18,34,0) 0%,rgba(14,18,34,.82) 45%,rgba(14,18,34,.96) 100%)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:780px;background:linear-gradient(180deg,rgba(27,36,64,0) 0%,rgba(27,36,64,.8) 32%,rgba(27,36,64,1) 56%,rgba(27,36,64,1) 100%)"></div>
 <div style="position:absolute;top:56px;left:64px;background:{SUN};color:{NAVY};font-weight:700;font-size:24px;letter-spacing:2px;padding:12px 22px;border-radius:999px">{e(p.get("label", "БЪЛГАРИЯ"))}</div>
 {f'<div style="position:absolute;top:62px;right:64px;font-size:20px;font-weight:600;color:rgba(255,255,255,.9);background:rgba(14,18,34,.6);padding:10px 18px;border-radius:999px;max-width:520px;text-align:right">{e(credit)}</div>' if credit else ''}
 <div style="position:absolute;left:64px;right:64px;bottom:200px;display:flex;flex-direction:column;gap:28px">
@@ -93,7 +94,7 @@ def ending(p, total):
 
 
 async def main(post_dir, fonts):
-    post_dir, fonts = pathlib.Path(post_dir), pathlib.Path(fonts)
+    post_dir, fonts = pathlib.Path(post_dir).resolve(), pathlib.Path(fonts).resolve()
     p = json.loads((post_dir / "post.json").read_text(encoding="utf-8"))
     photo = post_dir / "photo.jpg"
     photo_uri = ("data:image/jpeg;base64," + base64.b64encode(photo.read_bytes()).decode()) if photo.exists() else None
