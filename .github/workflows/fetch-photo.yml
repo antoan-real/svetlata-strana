@@ -1,0 +1,30 @@
+name: Foto holen
+on:
+  push:
+    paths: ["posts/**/photo.url"]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fotos herunterladen
+        run: |
+          set -e
+          for f in posts/*/photo.url; do
+            [ -e "$f" ] || continue
+            d=$(dirname "$f")
+            if [ ! -s "$d/photo.jpg" ]; then
+              url=$(head -n1 "$f" | tr -d '\r\n ')
+              echo "Lade $url"
+              curl -fsSL -A "Mozilla/5.0" -o "$d/photo.jpg" "$url"
+            fi
+          done
+      - name: Commit
+        run: |
+          git config user.name "svetlata-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add posts/*/photo.jpg 2>/dev/null || true
+          git diff --cached --quiet || (git commit -m "Foto geladen" && git push)
